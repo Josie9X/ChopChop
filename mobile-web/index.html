@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ChopChop Demo</title>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <main class="phone-shell">
+      <section class="screen active" id="generateScreen" data-screen="generate">
+        <div class="chat-nav">
+          <button class="icon-btn" id="historyBtn" type="button">History</button>
+          <strong id="conversationTitle">ChopChop</strong>
+          <button class="icon-btn" id="newChatBtn" type="button">+ New</button>
+        </div>
+
+        <header class="app-header">
+          <div>
+            <p class="eyebrow">ChopChop</p>
+            <h1>ChopChop</h1>
+            <p>Break big DDL tasks into clear next steps.</p>
+          </div>
+          <span class="live-pill" id="liveModePill">Live API</span>
+        </header>
+
+        <section class="panel backend-panel">
+          <button class="text-toggle" id="backendToggle" type="button">Backend settings</button>
+          <div class="backend-fields" id="backendFields" hidden>
+            <label for="backendUrl">Backend URL</label>
+            <input id="backendUrl" type="url" autocomplete="off" />
+            <p class="hint">Default is the public HTTPS API Gateway. Manual values are saved locally for debugging.</p>
+          </div>
+        </section>
+
+        <section class="chat-card" id="inputCard">
+          <div class="bot-row">
+            <div class="avatar">C</div>
+            <div class="bubble">
+              Tell me the assignment, deadline, and what you have done so far. I will turn it into a plan.
+            </div>
+          </div>
+
+          <form class="input-stack" id="planForm">
+            <div>
+              <label for="taskText">Task description</label>
+              <textarea
+                id="taskText"
+                rows="8"
+                placeholder="Example:
+I need to finish an academic writing literature review about AI in education. It is due May 12 at 18:00 and I have only collected a few sources."
+              ></textarea>
+            </div>
+
+            <div class="upload-card">
+              <input id="fileInput" type="file" accept=".pdf,.doc,.docx,.txt,.md,application/pdf,text/plain,text/markdown,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" hidden />
+              <button class="secondary-btn" id="fileButton" type="button">Attach file</button>
+              <div class="file-chip empty" id="fileChip">No file attached</div>
+            </div>
+
+            <button class="primary-btn" id="generateMainBtn" type="button">Send</button>
+          </form>
+        </section>
+
+        <section class="status-strip" id="statusStrip">
+          <span class="status-dot" id="statusDot"></span>
+          <div>
+            <strong id="statusTitle">Ready</strong>
+            <p id="statusText">Describe your task to generate two plan options. Live API is used first, with demo fallback if unavailable.</p>
+          </div>
+        </section>
+
+        <section class="panel hidden" id="loadingPanel">
+          <p class="eyebrow">Generating</p>
+          <h2 id="loadingTitle">Analyzing task type...</h2>
+          <div class="loading-track">
+            <span id="loadingBar"></span>
+          </div>
+        </section>
+
+        <section class="analysis-panel hidden" id="analysisPanel"></section>
+        <section class="plan-overview hidden" id="planOverview"></section>
+        <section class="plan-detail hidden" id="planDetail"></section>
+
+        <section class="floating-composer hidden" id="floatingComposer">
+          <button class="composer-attach" id="floatingAttachBtn" type="button">+</button>
+          <textarea id="floatingTaskText" rows="1" placeholder="Add more context..."></textarea>
+          <button class="composer-send" id="floatingSendBtn" type="button" disabled>Send</button>
+        </section>
+      </section>
+
+      <section class="screen" id="tasksScreen" data-screen="tasks">
+        <div class="chat-nav">
+          <button class="icon-btn" id="taskHistoryBtn" type="button">History</button>
+          <strong>My Tasks</strong>
+          <button class="icon-btn" id="taskNewChatBtn" type="button">+ New</button>
+        </div>
+
+        <header class="app-header tasks-header">
+          <div>
+            <p class="eyebrow">My Tasks</p>
+            <h1 id="tasksHeaderTitle">Tasks</h1>
+            <p id="tasksHeaderSubtitle">Choose an ongoing or completed task to review details.</p>
+          </div>
+        </header>
+
+        <div class="segmented" id="taskSegments">
+          <button class="active" id="ongoingTab" type="button" data-task-filter="ongoing">Ongoing Tasks</button>
+          <button id="completedTab" type="button" data-task-filter="completed">Completed Tasks</button>
+        </div>
+
+        <section class="task-list" id="taskList"></section>
+        <section class="task-detail hidden" id="taskDetail"></section>
+      </section>
+
+      <nav class="tab-bar">
+        <button class="active" type="button" data-tab="generate">
+          <span>+</span>
+          Generate Plan
+        </button>
+        <button type="button" data-tab="tasks">
+          <span>✓</span>
+          My Tasks
+        </button>
+      </nav>
+
+      <section class="sheet hidden" id="historySheet" aria-label="Chat history">
+        <div class="sheet-backdrop" id="historyBackdrop"></div>
+        <div class="sheet-panel">
+          <div class="sheet-head">
+            <div>
+              <p class="eyebrow">Chat History</p>
+              <h2>Previous chats</h2>
+            </div>
+            <button class="icon-btn" id="closeHistoryBtn" type="button">Close</button>
+          </div>
+          <div class="history-list" id="historyList"></div>
+        </div>
+      </section>
+
+      <section class="sheet hidden" id="taskEditSheet" aria-label="Edit task">
+        <div class="sheet-backdrop" id="taskEditBackdrop"></div>
+        <div class="sheet-panel edit-sheet-panel">
+          <div class="sheet-head">
+            <div>
+              <p class="eyebrow" id="taskEditEyebrow">Task</p>
+              <h2 id="taskEditTitle">Edit</h2>
+            </div>
+            <button class="icon-btn" id="cancelTaskEditBtn" type="button">Cancel</button>
+          </div>
+          <label id="taskEditLabel" for="taskEditField">Value</label>
+          <textarea id="taskEditField" rows="5"></textarea>
+          <button class="primary-btn" id="saveTaskEditBtn" type="button">Save</button>
+        </div>
+      </section>
+    </main>
+
+    <script src="./script.js"></script>
+  </body>
+</html>
